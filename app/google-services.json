@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "840571067574",
+    "firebase_url": "https://lockersmap-ad1fc.firebaseio.com",
+    "project_id": "lockersmap-ad1fc",
+    "storage_bucket": "lockersmap-ad1fc.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:840571067574:android:0863dbe83c6f13a5",
+        "android_client_info": {
+          "package_name": "tw.chikuo.lockersmap"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "840571067574-6rpg6eq6elv79vq2kld8jclqu1asg6qd.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "tw.chikuo.lockersmap",
+            "certificate_hash": "A9BB3BB0D3F4677396E554495AD5372822C1287C"
+          }
+        },
+        {
+          "client_id": "840571067574-rjm3b481lt976553oqtqbfffd1or09mb.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCdkZlf_k2Ml9X9EyCrLt72jrifyurYlXQ"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "840571067574-rjm3b481lt976553oqtqbfffd1or09mb.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
