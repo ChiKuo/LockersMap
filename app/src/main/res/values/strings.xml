@@ -1,3 +1,10 @@
 <resources>
     <string name="app_name">行李放哪兒</string>
+    <string name="tag_medium">中型</string>
+    <string name="tag_small">小型</string>
+    <string name="tag_large">大型</string>
+    <string name="tag_free">免費</string>
+    <string name="tag_per_hour">計時</string>
+    <string name="tag_per_times">計次</string>
+    <string name="tag_twenty_four">24小時</string>
 </resources>

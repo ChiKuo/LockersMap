@@ -3,6 +3,7 @@ package tw.chikuo.lockersmap;
 import com.google.firebase.database.Exclude;
 import com.google.firebase.database.IgnoreExtraProperties;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -12,7 +13,7 @@ import java.util.Map;
  * Created by Chi on 2016/9/18.
  */
 @IgnoreExtraProperties
-public class Stops {
+public class Stops implements Serializable{
 //    private String id;
     private String name;
     private String time;

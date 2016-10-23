@@ -34,9 +34,7 @@ import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 import com.google.maps.android.ui.IconGenerator;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
@@ -129,13 +127,20 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                             @Override
                             public void onDataChange(DataSnapshot dataSnapshot) {
                                 Stops stops = dataSnapshot.getValue(Stops.class);
-                                stopsMap.put(key, stops);
+                                if (stops != null && stops.getName() != null) {
+                                    stopsMap.put(key, stops);
 
-                                // Add marker to map , Use Google Maps Android API utility library
-                                LatLng latLng = new LatLng(location.latitude,location.longitude);
-                                IconGenerator iconFactory = new IconGenerator(MapsActivity.this);
-                                iconFactory.setTextAppearance(R.style.mapIconText);
-                                addIcon(iconFactory, stops, latLng);
+                                    LatLng latLng = new LatLng(location.latitude, location.longitude);
+
+                                    // Add marker to map
+                                    MarkerOptions markerOptions = new MarkerOptions()
+                                            .position(latLng)
+                                            .title(stops.getName())
+                                            .flat(true);
+//                                        .icon(BitmapDescriptorFactory.fromResource(R.drawable.)
+                                    Marker marker = mMap.addMarker(markerOptions);
+                                    markerStopsHashMap.put(marker, stops);
+                                }
                             }
 
                             @Override
@@ -170,19 +175,15 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 }
             });
 
-
-            // Marker click
-            mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
+            // Map infoWindow click
+            mMap.setOnInfoWindowClickListener(new GoogleMap.OnInfoWindowClickListener() {
                 @Override
-                public boolean onMarkerClick(Marker marker) {
-
+                public void onInfoWindowClick(Marker marker) {
                     Stops stops = markerStopsHashMap.get(marker);
 
-//                    Intent restaurantIntent = new Intent(MapsActivity.this, StopsActivity.class);
-//                    restaurantIntent.putExtra("stops", stops);
-//                    startActivity(restaurantIntent);
-
-                    return false;
+                    Intent intent = new Intent(MapsActivity.this, StopActivity.class);
+                    intent.putExtra("stops", stops);
+                    startActivity(intent);
                 }
             });
         }
@@ -190,7 +191,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
 
-    private void addIcon(IconGenerator iconFactory, Stops stops, LatLng position) {
+    private void addIcon(Stops stops, LatLng position) {
+
+        // Add marker to map , Use Google Maps Android API utility library
+
+        IconGenerator iconFactory = new IconGenerator(MapsActivity.this);
+        iconFactory.setTextAppearance(R.style.mapIconText);
+
         CharSequence text = stops.getName();
         MarkerOptions markerOptions = new MarkerOptions().
                 icon(BitmapDescriptorFactory.fromBitmap(iconFactory.makeIcon(text))).
