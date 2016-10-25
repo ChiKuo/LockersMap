@@ -1,4 +1,4 @@
-package tw.chikuo.lockersmap;
+package tw.chikuo.lockersmap.activity;
 
 import android.content.Context;
 import android.content.Intent;
@@ -12,6 +12,7 @@ import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.firebase.geofire.GeoFire;
 import com.firebase.geofire.GeoLocation;
@@ -37,13 +38,16 @@ import com.google.maps.android.ui.IconGenerator;
 import java.util.HashMap;
 import java.util.Map;
 
+import tw.chikuo.lockersmap.R;
+import tw.chikuo.lockersmap.object.Stop;
+
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
 
     private GoogleMap mMap;
     private GeoQuery geoQuery;
     private GeoLocation currentLocation;
-    private Map<String,Stops> stopsMap = new HashMap<>();
-    private HashMap<Marker,Stops>  markerStopsHashMap = new HashMap<>();
+    private Map<String,Stop> stopsMap = new HashMap<>();
+    private HashMap<Marker,Stop>  markerStopsHashMap = new HashMap<>();
 
     private FirebaseDatabase database;
     private DatabaseReference locationsRef;
@@ -59,7 +63,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         // Setup Firebase library
         database = FirebaseDatabase.getInstance();
         locationsRef = database.getReference("Locations");
-        stopsRef = database.getReference("Stops");
+        stopsRef = database.getReference("Stop");
 
         // Show permission for android 6.0
         String perm = android.Manifest.permission.ACCESS_FINE_LOCATION;
@@ -75,7 +79,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     .findFragmentById(R.id.map);
             mapFragment.getMapAsync(MapsActivity.this);
         }
-
     }
 
 
@@ -115,7 +118,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             // Query stops
             GeoFire geoFire = new GeoFire(locationsRef);
             currentLocation = new GeoLocation(25.0478, 121.517); // Default
-            geoQuery = geoFire.queryAtLocation(currentLocation, 100);
+            geoQuery = geoFire.queryAtLocation(currentLocation, 20); // KM
             geoQuery.addGeoQueryEventListener(new GeoQueryEventListener() {
                 @Override
                 public void onKeyEntered(final String key, final GeoLocation location) {
@@ -126,20 +129,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         stopsQuery.addListenerForSingleValueEvent(new ValueEventListener() {
                             @Override
                             public void onDataChange(DataSnapshot dataSnapshot) {
-                                Stops stops = dataSnapshot.getValue(Stops.class);
-                                if (stops != null && stops.getName() != null) {
-                                    stopsMap.put(key, stops);
+                                Stop stop = dataSnapshot.getValue(Stop.class);
+                                stop.setId(key);
+                                if (stop != null && stop.getName() != null) {
+                                    stopsMap.put(key, stop);
 
                                     LatLng latLng = new LatLng(location.latitude, location.longitude);
-
-                                    // Add marker to map
-                                    MarkerOptions markerOptions = new MarkerOptions()
-                                            .position(latLng)
-                                            .title(stops.getName())
-                                            .flat(true);
-//                                        .icon(BitmapDescriptorFactory.fromResource(R.drawable.)
-                                    Marker marker = mMap.addMarker(markerOptions);
-                                    markerStopsHashMap.put(marker, stops);
+                                    addIcon(stop, latLng);
                                 }
                             }
 
@@ -157,6 +153,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 @Override
                 public void onKeyExited(String key) {
                     Log.d("geoQuery", "");
+
+                    // TODO Need delete ?
                 }
 
                 @Override
@@ -175,30 +173,62 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 }
             });
 
-            // Map infoWindow click
-            mMap.setOnInfoWindowClickListener(new GoogleMap.OnInfoWindowClickListener() {
+//            // Map infoWindow click
+//            mMap.setOnInfoWindowClickListener(new GoogleMap.OnInfoWindowClickListener() {
+//                @Override
+//                public void onInfoWindowClick(Marker marker) {
+//                    Stop stop = markerStopsHashMap.get(marker);
+//
+//                    Intent intent = new Intent(MapsActivity.this, StopActivity.class);
+//                    intent.putExtra("stop", stop);
+//                    startActivity(intent);
+//                }
+//            });
+
+            mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
                 @Override
-                public void onInfoWindowClick(Marker marker) {
-                    Stops stops = markerStopsHashMap.get(marker);
+                public boolean onMarkerClick(Marker marker) {
+
+                    Stop stop = markerStopsHashMap.get(marker);
 
                     Intent intent = new Intent(MapsActivity.this, StopActivity.class);
-                    intent.putExtra("stops", stops);
+                    intent.putExtra("stop", stop);
                     startActivity(intent);
+                    return false;
                 }
             });
+
+            mMap.setOnCameraMoveListener(new GoogleMap.OnCameraMoveListener() {
+                @Override
+                public void onCameraMove() {
+                    LatLng latLng = mMap.getCameraPosition().target;
+                    if (latLng != null) {
+                        geoQuery.setCenter(new GeoLocation(latLng.latitude, latLng.longitude));
+                    }
+                    float level = mMap.getCameraPosition().zoom;
+                    if (level <= 8){
+                        geoQuery.setRadius(200);
+                    } else if (level <= 10){
+                        geoQuery.setRadius(100);
+                    } else {
+                        geoQuery.setRadius(20);
+                    }
+                }
+            });
+
         }
 
     }
 
 
-    private void addIcon(Stops stops, LatLng position) {
+    private void addIcon(Stop stop, LatLng position) {
 
         // Add marker to map , Use Google Maps Android API utility library
 
         IconGenerator iconFactory = new IconGenerator(MapsActivity.this);
         iconFactory.setTextAppearance(R.style.mapIconText);
 
-        CharSequence text = stops.getName();
+        CharSequence text = stop.getLowest_price();
         MarkerOptions markerOptions = new MarkerOptions().
                 icon(BitmapDescriptorFactory.fromBitmap(iconFactory.makeIcon(text))).
                 position(position).
@@ -206,8 +236,21 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         // Setup marker with seller calendar data.
         Marker marker = mMap.addMarker(markerOptions);
-        markerStopsHashMap.put(marker, stops);
+        markerStopsHashMap.put(marker, stop);
     }
+
+    private void addMarker(Stop stop, LatLng latLng) {
+
+        // Add marker to map
+        MarkerOptions markerOptions = new MarkerOptions()
+                .position(latLng)
+                .title(stop.getName())
+                .flat(true);
+//                .icon(BitmapDescriptorFactory.fromResource(R.drawable.)
+        Marker marker = mMap.addMarker(markerOptions);
+        markerStopsHashMap.put(marker, stop);
+    }
+
 
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {

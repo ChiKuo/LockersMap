@@ -8,6 +8,9 @@ import com.google.firebase.database.FirebaseDatabase;
 import java.util.ArrayList;
 import java.util.List;
 
+import tw.chikuo.lockersmap.object.Locker;
+import tw.chikuo.lockersmap.object.Stop;
+
 /**
  * Created by Chi on 2016/10/9.
  */
@@ -15,12 +18,12 @@ public class DBManagement {
 
     private FirebaseDatabase database = FirebaseDatabase.getInstance();
     private DatabaseReference locationsRef = database.getReference("Locations");
-    private DatabaseReference stopsRef = database.getReference("Stops");
+    private DatabaseReference stopsRef = database.getReference("Stop");
 
     public static void addNewStop() {
 
         FirebaseDatabase database = FirebaseDatabase.getInstance();
-        DatabaseReference stopsRef = database.getReference("Stops");
+        DatabaseReference stopsRef = database.getReference("Stop");
 
         // TODO new data
 
@@ -28,16 +31,32 @@ public class DBManagement {
         tagList.add("");
         tagList.add("");
 
-        Stops stops = new Stops();
-        stops.setName("");
-        stops.setDescription("");
-        stops.setLowest_price("");
-        stops.setNote("");
-        stops.setPhoto("");
-        stops.setTime("");
-        stops.setTagList(tagList);
-        stopsRef.child("key").setValue(stops);
+        Stop stop = new Stop();
+        stop.setName("");
+        stop.setDescription("");
+        stop.setLowest_price("");
+        stop.setNote("");
+        stop.setPhoto("");
+        stop.setTime("");
+        stop.setTagList(tagList);
+        stopsRef.child("key").setValue(stop);
     }
+
+    public static void addLocker() {
+
+        FirebaseDatabase database = FirebaseDatabase.getInstance();
+        DatabaseReference lockerRef = database.getReference("Locker");
+
+        for (int i = 0; i < 17; i++){
+            Locker locker = new Locker();
+            locker.setSize("");
+            locker.setCounts("");
+            locker.setLocationId("mrt_");
+            locker.setPrices("元/小時");
+            lockerRef.push().setValue(locker);
+        }
+    }
+
 
     public static void addNewLocations() {
 

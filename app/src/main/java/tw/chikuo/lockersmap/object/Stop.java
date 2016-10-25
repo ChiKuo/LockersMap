@@ -1,4 +1,4 @@
-package tw.chikuo.lockersmap;
+package tw.chikuo.lockersmap.object;
 
 import com.google.firebase.database.Exclude;
 import com.google.firebase.database.IgnoreExtraProperties;
@@ -13,8 +13,8 @@ import java.util.Map;
  * Created by Chi on 2016/9/18.
  */
 @IgnoreExtraProperties
-public class Stops implements Serializable{
-//    private String id;
+public class Stop implements Serializable{
+    private String id;
     private String name;
     private String time;
     private String note;
@@ -22,6 +22,14 @@ public class Stops implements Serializable{
     private String lowest_price;
     private String photo;
     private List<String> tagList = new ArrayList<>();
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
 
     public String getName() {
         return name;
